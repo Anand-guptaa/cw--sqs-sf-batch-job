@@ -1,0 +1,24 @@
+service: cw-sqs-sf-batch-job
+plugins:
+  - serverless-offline
+
+custom:
+  interval :
+    dev: 'cron(*/30 * * * ? *)'
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: us-west-2
+  role: arn:aws:iam::<<AWS-ACCOUNT-ID>>:role/batch-job-dev-lambdaRole
+functions:
+  batchJobHandler:
+    handler: src/handlers/batchJobEventProducer.handle
+    events:
+        - schedule: ${self:custom.interval.${self:provider.stage}}
+    environment:
+      QUEUE_NAME: "USER-PROFILE-QUEUE"
+      QUEUE_BASE_URL: "https://sqs.us-west-2.amazonaws.com/<<AWS-ACCOUNT-ID>>/"
+      EVENT_MESSAGE: "USER-BATCH-EVENT"
+
+
